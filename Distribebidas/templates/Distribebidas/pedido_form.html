@@ -1,0 +1,45 @@
+{% extends 'Distribebidas/base.html' %}
+
+{% block content %}
+<h2 class="mb-3">Crear Pedido</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  {{ formset.management_form }}
+
+  <table class="table table-bordered" id="tablaItems">
+    <thead class="table-primary">
+      <tr>
+        <th>Gaseosa</th>
+        <th style="width:120px;">Cantidad</th>
+        <th style="width:120px;">Precio</th>
+        <th style="width:120px;">Subtotal</th>
+        <th>Eliminar</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for f in formset %}
+        <tr>
+          <td>{{ f.gaseosa }}</td>
+
+          <td>{{ form.cantidad}}</td>
+
+          <td>{{ form.precio }}</td>
+
+          <td class="subtotal fw-bold">0.00</td>
+
+          <td>{{ f.DELETE }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <button type="submit" class="btn btn-primary">
+    <i class="bi bi-save"></i> Guardar Pedido
+  </button>
+</form>
+
+{% endblock %}

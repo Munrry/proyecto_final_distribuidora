@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura_{{ factura.id }}</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            font-size: 10pt;
+            background-color: #ffffff;
+        }
+        
+        .table-full {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .logo-title {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #0f172a;
+        }
+        
+        .logo-subtitle {
+            font-size: 10pt;
+            color: #b45309;
+            font-weight: bold;
+        }
+        
+        .invoice-badge-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #0f172a;
+            text-align: right;
+        }
+        
+        .invoice-badge-number {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #b45309;
+            text-align: right;
+        }
+        
+        .info-block {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+        }
+        
+        .section-title {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #0f172a;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 3px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        
+        .info-line { 
+            margin-bottom: 3px; 
+            font-size: 9.5pt; 
+        }
+        
+        .info-label { 
+            font-weight: bold; 
+            color: #64748b; 
+        }
+        
+        .items-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        
+        .items-table th {
+            background-color: #0f172a;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 9pt;
+            padding: 8px;
+        }
+        
+        .items-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 9.5pt;
+        }
+        
+        .total-box {
+            text-align: right;
+            font-size: 12pt;
+            font-weight: bold;
+            color: #b45309;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-top: 2px solid #0f172a;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="table-full">
+        <tr>
+            <td style="width: 50%;">
+                <div class="logo-title">LlevateTuBebida</div>
+                <div class="logo-subtitle">DISTRIBEBIDAS S.A.S.</div>
+            </td>
+            <td style="width: 50%; text-align: right;">
+                <div class="invoice-badge-title">FACTURA DE VENTA</div>
+                <div class="invoice-badge-number">#{{ factura.id }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="table-full">
+        <tr>
+            <td style="width: 100%;">
+                <div class="info-block">
+                    <div class="section-title">Detalles de la Transacción</div>
+                    <div class="info-line"><span class="info-label">Cliente:</span> {{ factura.pedido.cliente }}</div>
+                    <div class="info-line"><span class="info-label">Pedido N°:</span> {{ factura.pedido.numero_pedido }}</div>
+                    <div class="info-line"><span class="info-label">Fecha de Emisión:</span> {{ factura.fecha_factura|date:"d/m/Y" }} - {{ factura.fecha_factura|time:"H:i:s" }}</div>
+                    <div class="info-line"><span class="info-label">Estado Pago:</span> {{ factura.pedido.get_estado_display }}</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 50%; text-align: left;">Producto</th>
+                <th style="width: 25%; text-align: center;">Presentación</th>
+                <th style="width: 25%; text-align: right;">Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in factura.pedido.itempedido_set.all %}
+            <tr>
+                <td style="text-align: left;">{{ item.gaseosa.nombre }}</td>
+                <td style="text-align: center;">{{ item.contenido }}</td>
+                <td style="text-align: right;">{{ item.cantidad }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="table-full">
+        <tr>
+            <td style="width: 60%;"></td>
+            <td style="width: 40%;" class="total-box">
+                Total a Pagar: ${{ factura.total|floatformat:2 }}
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

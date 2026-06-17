@@ -1,0 +1,127 @@
+{% extends "Distribebidas/base.html" %}
+{% load humanize %}
+{% load static %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh;">
+  <div class="card p-4 shadow pedido-card" style="width: 450px;">
+    <div class="text-center mb-3">
+      <div class="producto-imagen-container">
+        {% if inventario.imagen %}
+          <img src="{{ inventario.imagen.url }}" class="img-fluid mb-3" alt="{{ gaseosa.nombre }}">
+        {% else %}
+          <img src="{% static 'Distribebidas/img/producto.png' %}" alt="Producto" class="producto-imagen">
+        {% endif %}
+      </div>
+      <h3 class="producto-titulo">{{ gaseosa.nombre }}</h3>
+      <p class="mb-1 stock-info">
+        <i class="bi bi-box-seam"></i> Stock disponible: 
+        <!-- Se añade el id "stock-dinamico" para actualizar el número -->
+        <span class="fw-bold stock-numero" id="stock-dinamico">{{ inventario.stock }}</span>
+      </p>
+      <div class="producto-descripcion mb-3" style="background:#f8f9fa; border-radius:8px; padding:10px;">
+        <strong>Descripción:</strong>
+        <span>{{ descripcion }}</span>
+      </div>
+    </div>
+    
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label presentacion-label">
+          <i class="bi bi-cup-straw"></i> Presentación
+        </label>
+        <!-- Se añade el id "presentacion-select" e inyectamos el data-stock en cada option -->
+        <select id="presentacion-select" name="inventario_id" class="form-select">
+          {% for p in presentaciones %}
+            <option value="{{ p.id }}" data-stock="{{ p.stock }}" {% if p.id == inventario.id %}selected{% endif %}>
+              {{ p.contenido }} - ${{ p.precio|intcomma }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label cantidad-label">
+          <i class="bi bi-hash"></i> Cantidad
+        </label>
+        <div class="cantidad-controls">
+          <button type="button" class="btn-cantidad btn-menos" onclick="cambiarCantidad(-1)">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+          <input 
+            type="number" 
+            name="cantidad" 
+            id="cantidadInput" 
+            min="1" 
+            data-stock="{{ inventario.stock }}"
+            value="1" 
+            class="cantidad-input" 
+            readonly
+          >
+          <button type="button" class="btn-cantidad btn-mas" onclick="cambiarCantidad(1)">
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </div>
+      </div>
+      
+      <button class="btn-agregar-carrito" type="submit">
+        <i class="bi bi-cart-plus"></i> Agregar al carrito
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+// Función existente para controlar los botones + y -
+function cambiarCantidad(delta) {
+  var input = document.getElementById('cantidadInput');
+  var min = parseInt(input.min) || 1;
+  var max = parseInt(input.getAttribute('data-stock')) || 0;
+  var val = parseInt(input.value) || min;
+  val += delta;
+  if (val < min) val = min;
+  if (val > max) val = max;
+  input.value = val;
+}
+
+// Lógica nueva para cambiar el stock disponible en tiempo real
+document.addEventListener("DOMContentLoaded", function () {
+  const selectPresentacion = document.getElementById("presentacion-select");
+  const stockDisplay = document.getElementById("stock-dinamico");
+  const cantidadInput = document.getElementById("cantidadInput");
+  const btnAgregar = document.querySelector(".btn-agregar-carrito");
+
+  if (selectPresentacion && stockDisplay && cantidadInput) {
+    selectPresentacion.addEventListener("change", function () {
+      // 1. Obtener la presentación seleccionada
+      const opcionSeleccionada = this.options[this.selectedIndex];
+      
+      // 2. Extraer su stock real
+      const nuevoStock = parseInt(opcionSeleccionada.getAttribute("data-stock")) || 0;
+      
+      // 3. Modificar visualmente el stock disponible arriba
+      stockDisplay.textContent = nuevoStock;
+      
+      // 4. Actualizar el límite del input (para que los botones + y - respeten el nuevo tope)
+      cantidadInput.setAttribute("data-stock", nuevoStock);
+      
+      // 5. Reiniciar el contador a 1 por seguridad
+      cantidadInput.value = nuevoStock > 0 ? 1 : 0;
+
+      // 6. Si la nueva presentación seleccionada no tiene stock, bloquear el botón
+      if (btnAgregar) {
+        if (nuevoStock <= 0) {
+          btnAgregar.disabled = true;
+          btnAgregar.innerHTML = '<i class="bi bi-x-circle"></i> Agotado';
+          btnAgregar.style.opacity = "0.5";
+        } else {
+          btnAgregar.disabled = false;
+          btnAgregar.innerHTML = '<i class="bi bi-cart-plus"></i> Agregar al carrito';
+          btnAgregar.style.opacity = "1";
+        }
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

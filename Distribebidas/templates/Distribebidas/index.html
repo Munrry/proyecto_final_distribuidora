@@ -1,0 +1,166 @@
+{% extends 'Distribebidas/base.html' %}
+{% load humanize %}
+{% block title %}Catálogo - Distribebidas{% endblock %}
+{% block content %}
+
+{# 🌟 INTERFAZ DE INTELIGENCIA CRM SEGÚN ROLES (ADMIN VS CLIENTE) 🌟 #}
+{% if request.user.is_authenticated and request.user.is_staff %}
+    {# ================================================================= #}
+    {# 📊 MÓDULO A: CRM ANALÍTICO PARA EL ADMINISTRADOR                  #}
+    {# ================================================================= #}
+    {% if top_global_data %}
+    <div class="container my-3">
+        <div class="p-3 rounded shadow-lg" style="background-color: #0f172a; border-left: 5px solid #0dcaf0;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="text-info mb-0 fw-bold">
+                    <i class="bi bi-graph-up-arrow me-1"></i> Telemetría Comercial: Productos de Mayor Rotación
+                </h5>
+                <span class="badge bg-info text-dark">Métricas Globales</span>
+            </div>
+            <p class="text-white-50 mb-3" style="font-size: 0.85rem;">Análisis transaccional en tiempo real de las 3 bebidas con mayor demanda en Distribebidas:</p>
+            
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 justify-content-center">
+                {% for item in top_global_data %}
+                    {% if item.objeto %}
+                    <div class="col" style="max-width: 280px;">
+                        <div class="card h-100 text-white border-secondary" style="background-color: #1e293b;">
+                            <div class="p-2 text-center" style="background: white; border-radius: 6px 6px 0 0;">
+                                {% if item.objeto.imagen %}
+                                    <img src="{{ item.objeto.imagen.url }}" alt="{{ item.objeto.gaseosa.nombre }}" style="height: 50px; object-fit: contain;">
+                                {% else %}
+                                    <i class="bi bi-cup-straw text-muted fs-4"></i>
+                                {% endif %}
+                            </div>
+                            <div class="card-body p-2 text-center">
+                                <h6 class="card-title mb-0 text-info fw-bold" style="font-size: 0.95rem;">{{ item.objeto.gaseosa.nombre }}</h6>
+                                <p class="text-muted m-0" style="font-size: 0.75rem;">{{ item.objeto.contenido }}</p>
+                                
+                                {# Métrica clave del CRM Analítico #}
+                                <div class="mt-2 p-1 rounded bg-dark border border-secondary">
+                                    <span class="text-white-50 small d-block" style="font-size: 0.7rem;">Unidades vendidas:</span>
+                                    <strong class="text-warning fs-6">{{ item.total_vendido }} u.</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <hr class="border-secondary my-3">
+    {% endif %}
+
+{% else %}
+    {# ================================================================= #}
+    {# 🛒 MÓDULO B: CRM PREDICTIVO PARA CLIENTES (NUEVOS Y ANTIGUOS)      #}
+    {# ================================================================= #}
+    {% if recomendaciones %}
+    <div class="container my-3">
+        <div class="p-3 rounded shadow-lg" style="background-color: #1e293b; border-left: 5px solid #ffc107;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+                <h5 class="text-warning mb-0 fw-bold">
+                    <i class="bi bi-magic me-1"></i> ¡Especialmente para ti, {{ request.user.username }}!
+                </h5>
+                {% if es_nuevo_usuario %}
+                    <span class="badge bg-danger">Tendencia Global</span>
+                {% else %}
+                    <span class="badge bg-success">Tu Historial</span>
+                {% endif %}
+            </div>
+            
+            {% if es_nuevo_usuario %}
+                <p class="text-light-50 mb-3" style="font-size: 0.85rem;">¡Bienvenido! Te recomendamos las bebidas más populares de la tienda:</p>
+            {% else %}
+                <p class="text-light-50 mb-3" style="font-size: 0.85rem;">Basado en tus compras anteriores, creemos que te podría interesar reordenar tus favoritos hoy:</p>
+            {% endif %}
+            
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 justify-content-center">
+                {% for rec in recomendaciones %}
+                    <div class="col" style="max-width: 280px;">
+                        <div class="card h-100 text-white border-secondary" style="background-color: #0f172a;">
+                            <div class="p-2 text-center" style="background: white; border-radius: 6px 6px 0 0;">
+                                {% if rec.imagen %}
+                                    <img src="{{ rec.imagen.url }}" alt="{{ rec.gaseosa.nombre }}" style="height: 60px; object-fit: contain;">
+                                {% else %}
+                                    <i class="bi bi-cup-straw text-muted fs-4"></i>
+                                {% endif %}
+                            </div>
+                            <div class="card-body p-2 text-center d-flex flex-column justify-content-between">
+                                <div>
+                                    <h6 class="card-title mb-0 text-warning fw-bold" style="font-size: 0.95rem;">{{ rec.gaseosa.nombre }}</h6>
+                                    <p class="text-white-50 m-0" style="font-size: 0.75rem;">{{ rec.gaseosa.marca }}</p>
+                                    <p class="text-muted m-0" style="font-size: 0.75rem;">{{ rec.contenido }}</p>
+                                    <p class="precio-texto fw-bold my-1" style="font-size: 0.9rem;">${{ rec.precio|intcomma }}</p>
+                                </div>
+                                <a href="{% url 'Distribebidas:pedido_cliente' rec.id %}" class="btn btn-primary btn-sm w-100 py-1" style="font-size: 0.8rem;">
+                                    <i class="bi bi-cart-plus"></i> Pedir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <hr class="border-secondary my-3">
+    {% endif %}
+{% endif %}
+
+
+<h2 class="auth-title my-4">Catálogo de bebidas</h2>
+
+<div class="row">
+  {% for gaseosa in bebidas %}
+    {% with inventario=gaseosa.inventarios.first %}
+      <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card producto-card shadow-sm text-center p-3 h-100">
+          
+          <div class="producto-img-wrapper mb-3">
+            {% if inventario.imagen %}
+              <img src="{{ inventario.imagen.url }}" class="card-img-top producto-img" alt="{{ gaseosa.nombre }}" style="max-height: 150px; object-fit: contain;">
+            {% else %}
+              <div class="producto-placeholder fs-1 text-muted">
+                <i class="bi bi-cup-straw"></i>
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="card-body p-0">
+            <h4 class="fw-bold text-white mb-1">{{ gaseosa.nombre }}</h4>
+            <p class="text-white-50 small mb-3">{{ gaseosa.marca }}</p>
+            
+            <p class="text-muted small mb-2">
+              {% if inventario %}
+                {{ inventario.contenido }}
+              {% else %}
+                Sin presentación
+              {% endif %}
+            </p>
+            
+            <p class="precio-texto fw-bold fs-5 mb-3">
+              {% if inventario and inventario.precio > 0 %}
+                ${{ inventario.precio|intcomma }}
+              {% else %}
+                <span class="text-danger small">Agotado</span>
+              {% endif %}
+            </p>
+            
+            {% if inventario %}
+              <a href="{% url 'Distribebidas:pedido_cliente' inventario.id %}" class="btn btn-primary btn-sm w-100">
+                <i class="bi bi-cart-plus"></i> Pedir
+              </a>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+    {% endwith %}
+  {% empty %}
+    <div class="col-12 text-center text-muted py-5">
+      <p class="fs-5">No hay productos registrados en el sistema.</p>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

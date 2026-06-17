@@ -1,0 +1,48 @@
+{% extends 'Distribebidas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg text-white" style="background-color: #1a233a;">
+        <h2 class="text-warning mb-4">
+            {% if editando %}
+                <i class="bi bi-pencil-square"></i> Editar Presentación del Inventario
+            {% else %}
+                <i class="bi bi-plus-circle"></i> Agregar Presentación al Inventario
+            {% endif %}
+        </h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {{ form.as_p }}
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">
+                    {% if editando %}
+                        <i class="bi bi-save"></i> Guardar Cambios
+                    {% else %}
+                        <i class="bi bi-save"></i> Guardar Presentación
+                    {% endif %}
+                </button>
+                <a href="{% url 'Distribebidas:dashboard_admin' %}" class="btn btn-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  document.querySelectorAll('input, select').forEach(function(element) {
+      // Les agregamos clases nativas de Bootstrap para modo oscuro
+      element.classList.add('form-control', 'bg-dark', 'text-light');
+      element.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+      element.style.marginTop = '4px';
+      element.style.marginBottom = '12px';
+      
+      // Ajuste especial para los selectores desplegables
+      if (element.tagName === 'SELECT') {
+          element.classList.add('form-select');
+      }
+  });
+</script>
+{% endblock %}

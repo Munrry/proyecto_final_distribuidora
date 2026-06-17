@@ -1,0 +1,11 @@
+{% extends "Distribebidas/base.html" %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+  <div class="card p-4 shadow" style="background: #232323;">
+    <h2 class="text-center" style="color:#e0e0e0;">¡Compra completada!</h2>
+    <p class="text-center" style="color:#bdbdbd;">Gracias por tu compra. El total fue: <strong>${{ total|floatformat:2 }}</strong></p>
+    <p class="text-center" style="color:#bdbdbd;">Serás redirigido a tu factura en unos segundos...</p>
+  </div>
+</div>
+<meta http-equiv="refresh" content="4;url={% url 'Distribebidas:factura_detail' factura_id %}">
+{% endblock %}

@@ -1,0 +1,75 @@
+{% load static %}
+{% extends 'Distribebidas/base.html' %}
+{% block content %}
+<h2>Inventario</h2>
+
+<table class="table table-striped">
+  <thead class="table-primary">
+    <tr>
+      <th>Producto</th>
+      <th>Marca</th>
+      <th>Cantidad</th>
+      <th>Contenido</th>
+      <th>Stock</th>
+      <th>Pedir</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for inv in inventarios %}
+    <tr>
+      <td>{{ inv.gaseosa.nombre }}</td>
+      <td>{{ inv.contenido }}</td>
+      <td>{{ inv.sku }}</td>
+      <td>${{ inv.precio|floatformat:2 }}</td>
+      <td>{{ inv.stock }}</td>
+      <td>
+        <form method="post" action="{% url 'Distribebidas:agregar_carrito' inv.id %}">
+          {% csrf_token %}
+          <input type="number" name="cantidad" min="1" max="{{ inv.stock }}" value="1" style="width:60px;">
+          <button class="btn btn-dark btn-sm" type="submit">Agregar al carrito</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Modal para pedir producto -->
+<div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: #232323; color: #eee;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title w-100 text-center" id="pedidoModalLabel"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="mb-3">
+          <label class="form-label">Cantidad</label>
+          <div class="d-flex justify-content-center flex-wrap gap-2">
+            {% for cantidad in "100ml,150ml,200ml,500ml,750ml,1L,1.5L,2L,2.5L,3L".split(',') %}
+              <button type="button" class="btn btn-outline-light cantidad-btn" data-cantidad="{{ cantidad }}">{{ cantidad }}</button>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Stock disponible:</label>
+          <span id="modalStock" class="fw-bold"></span>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Cantidad a pedir:</label>
+          <div class="d-flex justify-content-center align-items-center gap-2">
+            <button type="button" class="btn btn-secondary" id="menosBtn">-</button>
+            <span id="cantidadPedida" class="fs-5">1</span>
+            <button type="button" class="btn btn-secondary" id="masBtn">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-dark" id="confirmarPedidoBtn">
+          <i class="bi bi-cart-check"></i> Confirmar pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

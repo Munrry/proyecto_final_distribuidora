@@ -1,0 +1,107 @@
+{% extends "Distribebidas/base.html" %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="perfil-card">
+    <div class="perfil-header">
+      <h2>
+        <i class="bi bi-receipt"></i> Factura #{{ factura.numero_factura }}
+      </h2>
+    </div>
+    
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="info-card">
+          <h5><i class="bi bi-person"></i> Información del Cliente</h5>
+          <p><strong>Nombre:</strong> {{ factura.pedido.cliente }}</p>
+          
+          {% with perfil=request.user.perfil %}
+            <p><strong>Teléfono:</strong> {{ perfil.identificador_telefono }} {{ perfil.telefono }}</p>
+            <p><strong>Dirección:</strong> {{ perfil.direccion|default:"No especificado" }}</p>
+            <p><strong>País:</strong> {{ perfil.nacionalidad|default:"No especificado" }}</p>
+          {% endwith %}
+          
+          <p><strong>Fecha:</strong> {{ factura.fecha_factura|date:"d/m/Y" }}</p>
+          <p><strong>Hora:</strong> {{ factura.fecha_factura|time:"H:i:s" }}</p>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="info-card">
+          <h5><i class="bi bi-info-circle"></i> Detalles del Pedido</h5>
+          <p><strong>Número de Pedido:</strong> {{ factura.pedido.numero_pedido }}</p>
+          <p><strong>Estado:</strong> 
+            <span class="badge bg-success">{{ factura.pedido.get_estado_display }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <h5 class="mb-3"><i class="bi bi-list-ul"></i> Productos</h5>
+    <table class="table table-dark align-middle">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Presentación</th>
+          <th>Cantidad</th>
+          <th>Precio</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in factura.pedido.itempedido_set.all %}
+        <tr>
+          <td>{{ item.gaseosa.nombre }}</td>
+          <td>{{ item.contenido }}</td>
+          <td>{{ item.cantidad }}</td>
+          <td>${{ item.precio|floatformat:2 }}</td>
+          <td>${{ item.subtotal|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
+    <div class="totales-section">
+      <div class="totales-card">
+        <p>Subtotal: <span>${{ factura.subtotal|floatformat:2 }}</span></p>
+        <p>IVA (19%): <span>${{ factura.calcular_iva|floatformat:2 }}</span></p>
+        <p class="total">Total: <span>${{ factura.total|floatformat:2 }}</span></p>
+      </div>
+    </div>
+    
+    <div class="d-flex gap-2 mt-4">
+      <button 
+        id="previewPdfBtn" 
+        class="btn btn-dark" 
+        data-factura-id="{{ factura.id }}"
+      >
+        <i class="bi bi-eye"></i> Vista previa
+      </button>
+      <a href="{% url 'Distribebidas:factura_pdf' factura.id %}" class="btn btn-outline-secondary" download>
+        <i class="bi bi-download"></i> Descargar PDF
+      </a>
+      <a href="{% url 'Distribebidas:index' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver al catálogo
+      </a>
+    </div>
+  </div>
+</div>
+
+<div id="pdfPreviewModal" class="pdf-preview-modal">
+  <div class="pdf-preview-content">
+    <div class="pdf-preview-header">
+      <h4><i class="bi bi-file-earmark-pdf"></i> Vista previa de Factura</h4>
+      <button id="closePdfModal" class="pdf-preview-close">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+    <div id="pdfPreviewModalContent">
+      </div>
+    <div class="text-center mt-4">
+      <a href="{% url 'Distribebidas:factura_pdf' factura.id %}" class="btn btn-dark" download>
+        <i class="bi bi-download"></i> Descargar PDF
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

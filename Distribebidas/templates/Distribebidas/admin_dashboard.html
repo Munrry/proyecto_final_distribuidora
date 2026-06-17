@@ -1,0 +1,183 @@
+{% extends 'Distribebidas/base.html' %}
+{% load humanize %}
+{% block content %}
+<div class="container my-5">
+    
+    <div class="mb-4">
+        <h2 class="text-warning fw-bold"><i class="bi bi-speedometer2"></i> Panel de Administración - Distribuidora</h2>
+        <p class="text-light">Monitoreo en tiempo real de inventarios, stock y ventas generales.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="info-card p-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-white-50 text-uppercase small m-0">Ingresos Totales</h6>
+                        <h3 class="fw-bold my-2" style="color: var(--accent-gold, #ffd966);">${{ ventas_totales|floatformat:2|intcomma }}</h3>
+                    </div>
+                    <div class="fs-1 text-success"><i class="bi bi-cash-coin"></i></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="info-card p-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-white-50 text-uppercase small m-0">Presentaciones de Bebidas</h6>
+                        <h3 class="fw-bold my-2 text-white">{{ total_bebidas }}</h3>
+                    </div>
+                    <div class="fs-1 text-info"><i class="bi bi-box-seam"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="info-card p-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-white-50 text-uppercase small m-0">Productos Sin Stock</h6>
+                        <h3 class="fw-bold my-2 {% if bebidas_agotadas > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            {{ bebidas_agotadas }}
+                        </h3>
+                    </div>
+                    <div class="fs-1 text-danger"><i class="bi bi-exclamation-octagon"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="p-4" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="m-0 text-warning fw-bold"><i class="bi bi-list-stars"></i> Estado del Inventario</h5>
+                    <a href="{% url 'Distribebidas:agregar_inventario' %}" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-plus-circle"></i> Agregar
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped align-middle m-0">
+                        <thead>
+                            <tr>
+                                <th>Bebida / Contenido</th>
+                                <th>SKU</th>
+                                <th>Disponibles</th>
+                                <th>Precio</th> 
+                                <th class="text-center">Acciones</th> 
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in inventarios %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ item.gaseosa.nombre }}</div>
+                                    <small class="text-white-50">{{ item.contenido }}</small>
+                                </td>
+                                <td class="text-light font-monospace" style="letter-spacing: 0.5px;">{{ item.sku }}</td>
+                                <td>
+                                    {% if item.stock > 15 %}
+                                        <span class="badge bg-success-subtle text-success">{{ item.stock }} unds</span>
+                                    {% elif item.stock > 0 %}
+                                        <span class="badge bg-warning-subtle text-warning">{{ item.stock }} ¡Bajo!</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger">Agotado</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold text-light">${{ item.precio|intcomma }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'Distribebidas:editar_inventario' item.pk %}" class="btn btn-sm btn-warning fw-semibold px-2 py-1" style="font-size: 0.85rem;">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">No hay productos cargados en inventario.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="p-4" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
+                <h5 class="mb-4 text-warning fw-bold"><i class="bi bi-clock-history"></i> Historial de Pedidos</h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped align-middle m-0">
+                        <thead>
+                            <tr>
+                                <th>Nº Pedido</th>
+                                <th>Cliente / Fecha</th>
+                                <th>Estado</th>
+                                <th>Total</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in pedidos %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'Distribebidas:detalle_pedido' p.pk %}" class="text-info fw-semibold text-decoration-none">
+                                        {{ p.numero_pedido }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">{{ p.cliente }}</div>
+                                    <small class="text-white-50" style="font-size: 0.8rem;">{{ p.fecha|date:"d/m/Y H:i" }}</small>
+                                </td>
+                                <td>
+                                    {% if p.estado == 'pendiente' %}
+                                        <span class="badge bg-secondary text-white">Pendiente</span>
+                                    {% elif p.estado == 'pagado' %}
+                                        <span class="badge bg-warning text-dark">Por Despachar</span>
+                                    {% elif p.estado == 'procesado' %}
+                                        <span class="badge bg-info text-dark">En Camino</span>
+                                    {% elif p.estado == 'entregado' %}
+                                        <span class="badge bg-success text-white">Entregado</span>
+                                    {% elif p.estado == 'cancelado' %}
+                                        <span class="badge bg-danger text-white">Cancelado</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">{{ p.get_estado_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold text-light">${{ p.total|floatformat:2|intcomma }}</td>
+                                <td class="text-center">
+                                    {# 🧾 Validación Dinámica de Facturas en el CRM #}
+                                    {% if p.factura %}
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'Distribebidas:factura_detail' p.factura.id %}" class="btn btn-sm btn-outline-info" title="Ver Detalle HTML">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'Distribebidas:factura_pdf' p.factura.id %}" class="btn btn-sm btn-danger fw-bold" target="_blank" title="Imprimir Comprobante PDF">
+                                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        {% if p.estado == 'entregado' or p.estado == 'pagado' or p.estado == 'procesado' %}
+                                            <span class="text-white-50 small font-monospace"><i class="bi bi-gear-fill spin"></i> Sin factura</span>
+                                        {% else %}
+                                            <a href="{% url 'Distribebidas:detalle_pedido' p.id %}" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size: 0.8rem;">
+                                                <i class="bi bi-sliders"></i> Gestionar
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">No se registran compras todavía.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

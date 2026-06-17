@@ -1,0 +1,74 @@
+{% extends "Distribebidas/base.html" %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh; background: #181818;">
+  <div class="card p-4 shadow" style="width: 420px; background: #232323;">
+    <h3 class="mb-3 text-center" style="color: #e0e0e0;">Crear cuenta</h3>
+    <form method="POST" class="form-anim" autocomplete="off">{% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="mb-3 text-center">
+        {{ form.username.label_tag }}
+        <div class="d-flex justify-content-center">
+          {{ form.username }}
+        </div>
+        {% if form.username.errors %}
+          <div class="text-danger small mt-1">
+            {% for error in form.username.errors %}{{ error }}<br>{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      <div class="mb-3 text-center">
+        {{ form.email.label_tag }}
+        <div class="d-flex justify-content-center">
+          {{ form.email }}
+        </div>
+        {% if form.email.errors %}
+          <div class="text-danger small mt-1">
+            {% for error in form.email.errors %}{{ error }}<br>{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      <div class="mb-3 text-center">
+        {{ form.password1.label_tag }}
+        <div class="d-flex justify-content-center">
+          {{ form.password1 }}
+        </div>
+        {% if form.password1.errors %}
+          <div class="text-danger small mt-1">
+            {% for error in form.password1.errors %}{{ error }}<br>{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      <div class="mb-3 text-center">
+        {{ form.password2.label_tag }}
+        <div class="d-flex justify-content-center">
+          {{ form.password2 }}
+        </div>
+        {% if form.password2.errors %}
+          <div class="text-danger small mt-1">
+            {% for error in form.password2.errors %}{{ error }}<br>{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+      <div class="d-grid">
+        <button class="btn btn-dark">Registrarse</button>
+      </div>
+      <div class="mt-2 text-center">
+        <a href="{% url 'Distribebidas:login' %}" style="color: #bdbdbd;">¿Ya tienes cuenta? Inicia sesión</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const username = document.querySelector('input[name="username"]');
+  const email = document.querySelector('input[name="email"]');
+  const password1 = document.querySelector('input[name="password1"]');
+  const password2 = document.querySelector('input[name="password2"]');
+  
+  if (username) username.placeholder = 'Usuario';
+  if (email) email.placeholder = 'Correo electrónico';
+  if (password1) password1.placeholder = 'Contraseña';
+  if (password2) password2.placeholder = 'Confirmar contraseña';
+});
+</script>
+{% endblock %}
